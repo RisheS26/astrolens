@@ -1,121 +1,97 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useEffect, useState } from 'react'
+import { fetchAPOD } from './api/nasa'
+import { askAI } from './api/ai'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [apod, setApod] = useState(null)
+  const [error, setError] = useState(null)
+  const [aiReply, setAiReply] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
+
+  useEffect(() => {
+    fetchAPOD()
+      .then(setApod)
+      .catch((e) => setError(e.message))
+  }, [])
+
+  async function handleExplain() {
+    if (!apod) return
+    setAiLoading(true)
+    setAiReply('')
+    try {
+      const reply = await askAI(
+        'Explain this in simple terms for a curious teen.',
+        `NASA APOD: ${apod.title}. ${apod.explanation}`
+      )
+      setAiReply(reply)
+    } catch (e) {
+      setAiReply('AI unavailable — check your API key.')
+    }
+    setAiLoading(false)
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="min-h-screen bg-[#050810] text-white p-8">
+      <h1 className="text-4xl font-bold mb-2">🔭 AstroLens</h1>
+      <p className="text-slate-400 mb-8 text-sm">
+        Live NASA data + AI explainer
+      </p>
+
+      {error && (
+        <div className="bg-red-900/30 border border-red-500/30 rounded-xl p-4 mb-6 text-red-300">
+          Error: {error} — check your NASA API key in .env
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
+      )}
+
+      {!apod && !error && (
+        <p className="text-slate-500 animate-pulse">
+          Loading NASA data...
+        </p>
+      )}
+
+      {apod && (
+        <div className="max-w-2xl">
+          <h2 className="text-2xl font-bold mb-1">{apod.title}</h2>
+          <p className="text-slate-400 text-xs mb-4">{apod.date}</p>
+
+          {apod.media_type === 'image' ? (
+            <img
+              src={apod.url}
+              alt={apod.title}
+              className="w-full rounded-2xl mb-6 border border-slate-700"
+            />
+          ) : (
+            <iframe
+              src={apod.url}
+              title={apod.title}
+              className="w-full aspect-video rounded-2xl mb-6"
+              allowFullScreen
+            />
+          )}
+
+          <p className="text-slate-300 text-sm leading-relaxed mb-6">
+            {apod.explanation}
           </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
 
-      <div className="ticks"></div>
+          <button
+            onClick={handleExplain}
+            disabled={aiLoading}
+            className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold px-6 py-3 rounded-xl transition-all mb-4"
+          >
+            {aiLoading ? '🤖 Thinking...' : '🤖 Explain with AI'}
+          </button>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+          {aiReply && (
+            <div className="bg-slate-800/60 border border-blue-500/30 rounded-xl p-4 text-slate-200 text-sm leading-relaxed">
+              <p className="text-blue-400 text-xs font-bold mb-2 uppercase tracking-wider">
+                AstroLens AI
+              </p>
+              {aiReply}
+            </div>
+          )}
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      )}
+    </div>
   )
 }
 
