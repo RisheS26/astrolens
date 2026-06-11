@@ -1,0 +1,26 @@
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+
+  if (req.method === 'OPTIONS') return res.status(200).end()
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+
+  const key = process.env.VITE_HACKCLUB_AI_KEY
+  if (!key) return res.status(500).json({ error: 'Missing API key in Vercel env vars' })
+
+  try {
+    const response = await fetch('https://ai.hackclub.com/proxy/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(req.body)
+    })
+    const data = await response.json()
+    return res.status(200).json(data)
+  } catch (e) {
+    return res.status(500).json({ error: e.message })
+  }
+}
