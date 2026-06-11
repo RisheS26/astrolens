@@ -1,16 +1,26 @@
-# React + Vite
+# 🔭 AstroLens — Real-time NASA Data + AI Explorer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Live demo:** https://astrolens-star.vercel.app/
+**Built for:** Hack Club Stardance 2026
 
-Currently, two official plugins are available:
+## What is this?
+[GIF of the app in action — record with Kap on Mac]
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+AstroLens lets you explore live NASA space data and ask an AI guide
+questions about what you're seeing. Real data. Real space. Plain English.
 
-## React Compiler
+## Features
+- 🌌 JWST image gallery with AI explanations
+- ☀️ Live space weather (solar flares, CMEs)
+- ☄️ Near-Earth asteroid tracker
+- 📡 Deep Space Network live dish status
+- 💬 AI chat powered by Hack Club AI API
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
+React, Vite, Tailwind CSS, NASA Open APIs, Hack Club AI
 
-## Expanding the ESLint configuration
+## How to run locally
+[step by step instructions]
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## APIs used
+[list every API with link]
