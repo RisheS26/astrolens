@@ -1,35 +1,31 @@
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+const isDev = import.meta.env.DEV
 
-  if (req.method === 'OPTIONS') return res.status(200).end()
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+export async function askAI(userQuestion, context = '') {
+  const endpoint = isDev ? '/ai-api/chat/completions' : '/api/ai'
+  const key = import.meta.env.VITE_HACKCLUB_AI_KEY
 
-  const key = process.env.VITE_HACKCLUB_AI_KEY
+  const headers = { 'Content-Type': 'application/json' }
+  if (isDev) headers['Authorization'] = `Bearer ${key}`
 
-  if (!key) {
-    return res.status(500).json({ error: 'VITE_HACKCLUB_AI_KEY not set in Vercel env vars' })
-  }
-
-  try {
-    const response = await fetch('https://ai.hackclub.com/proxy/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${key}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(req.body)
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      model: 'qwen/qwen3-32b',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are AstroLens, an AI space guide. Explain NASA data clearly and simply to curious teens. Keep answers under 4 sentences.'
+        },
+        {
+          role: 'user',
+          content: context ? `Context: ${context}\n\nQuestion: ${userQuestion}` : userQuestion
+        }
+      ]
     })
+  })
 
-    const data = await response.json()
-
-    if (!response.ok) {
-      return res.status(response.status).json({ error: data })
-    }
-
-    return res.status(200).json(data)
-  } catch (e) {
-    return res.status(500).json({ error: e.message })
-  }
+  if (!res.ok) throw new Error(`AI error: ${res.status}`)
+  const data = await res.json()
+  return data.choices[0].message.content
 }
