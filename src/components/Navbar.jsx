@@ -9,6 +9,7 @@ const links = [
   { to: '/asteroids', label: '☄️ Asteroids' },
   { to: '/dsn', label: '📡 DSN' },
   { to: '/earth', label: '🌍 Earth' },
+  { to: '/mars', label: '🔴 Mars Rovers' },
 ]
 
 export default function Navbar() {
