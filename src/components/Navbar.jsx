@@ -8,13 +8,10 @@ const links = [
   { to: '/weather', label: '☀️ Weather' },
   { to: '/asteroids', label: '☄️ Asteroids' },
   { to: '/dsn', label: '📡 DSN' },
-  { to: '/earth', label: '🌍 Earth' },
-  { to: '/mars', label: '🔴 Mars Rovers' },
 ]
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
-
   return (
     <>
       <nav style={{
@@ -25,13 +22,8 @@ export default function Navbar() {
         padding: '0 1.5rem', height: '60px',
         justifyContent: 'space-between'
       }}>
-        <span style={{ fontWeight: 800, fontSize: '1rem', color: '#60a5fa' }}>
-          🔭 AstroLens
-        </span>
-
-        {/* Desktop links */}
-        <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}
-          className="desktop-nav">
+        <span style={{ fontWeight: 800, fontSize: '1rem', color: '#60a5fa' }}>🔭 AstroLens</span>
+        <div style={{ display: 'flex', gap: '0.3rem' }} className="desktop-nav">
           {links.map(l => (
             <NavLink key={l.to} to={l.to} end={l.to === '/'}
               style={({ isActive }) => ({
@@ -45,24 +37,18 @@ export default function Navbar() {
             </NavLink>
           ))}
         </div>
-
-        {/* Mobile hamburger */}
         <button onClick={() => setMenuOpen(o => !o)} style={{
           display: 'none', background: 'transparent', border: '1px solid #1e2d4a',
           borderRadius: '8px', padding: '0.4rem 0.6rem', color: '#94a3b8',
           cursor: 'pointer', fontSize: '1rem'
-        }} className="mobile-menu-btn">
-          {menuOpen ? '✕' : '☰'}
-        </button>
+        }} className="mobile-menu-btn">{menuOpen ? '✕' : '☰'}</button>
       </nav>
-
-      {/* Mobile dropdown */}
       {menuOpen && (
         <div style={{
           position: 'fixed', top: '60px', left: 0, right: 0, zIndex: 99,
           background: 'rgba(5,8,16,0.98)', borderBottom: '1px solid #1e2d4a',
           padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem'
-        }} className="mobile-nav">
+        }}>
           {links.map(l => (
             <NavLink key={l.to} to={l.to} end={l.to === '/'}
               onClick={() => setMenuOpen(false)}
@@ -78,13 +64,7 @@ export default function Navbar() {
           ))}
         </div>
       )}
-
-      <style>{`
-        @media (max-width: 700px) {
-          .desktop-nav { display: none !important; }
-          .mobile-menu-btn { display: block !important; }
-        }
-      `}</style>
+      <style>{`@media (max-width: 700px) { .desktop-nav { display: none !important; } .mobile-menu-btn { display: block !important; } }`}</style>
     </>
   )
 }

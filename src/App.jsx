@@ -5,8 +5,6 @@ import Dashboard from './pages/Dashboard'
 import APODPage from './pages/APODPage'
 import SpaceWeather from './pages/SpaceWeather'
 import Asteroids from './pages/Asteroids'
-import MarsRover from './pages/MarsRover'
-import EarthPage from './pages/EarthPage'
 import DSNLive from './pages/DSNLive'
 import JWSTPage from './pages/JWSTPage'
 
@@ -20,9 +18,7 @@ export default function App() {
           <Route path="/jwst" element={<JWSTPage />} />
           <Route path="/weather" element={<SpaceWeather />} />
           <Route path="/asteroids" element={<Asteroids />} />
-          <Route path="/mars" element={<MarsRover />} />
-        <Route path="/earth" element={<EarthPage />} />
-        <Route path="/dsn" element={<DSNLive />} />
+          <Route path="/dsn" element={<DSNLive />} />
         </Routes>
       </Layout>
       <AIChatPanel />
