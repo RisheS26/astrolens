@@ -10,8 +10,16 @@ export default function EarthPage() {
   useEffect(() => {
     const key = import.meta.env.VITE_NASA_API_KEY
     fetch(`https://api.nasa.gov/EPIC/api/natural/images?api_key=${key}`)
-      .then(r => r.json())
-      .then(data => setImages(data.slice(0, 12)))
+      .then(async r => {
+        const text = await r.text()
+        try {
+          const data = JSON.parse(text)
+          if (Array.isArray(data) && data.length) setImages(data.slice(0, 12))
+          else setError('No Earth images available right now — EPIC updates daily')
+        } catch {
+          setError('NASA rate limit hit — get a real key at api.nasa.gov or wait 1 hour')
+        }
+      })
       .catch(e => setError(e.message))
   }, [])
 
@@ -23,7 +31,7 @@ export default function EarthPage() {
         'NASA EPIC camera on DSCOVR satellite takes daily full-disc photos of Earth from L1 Lagrange point, 1.5M km away'
       )
       setAiReply(reply)
-    } catch { setAiReply('AI unavailable') }
+    } catch(e) { setAiReply('AI unavailable: ' + e.message) }
     setAiLoading(false)
   }
 
@@ -48,7 +56,13 @@ export default function EarthPage() {
         </div>
       )}
 
-      {error && <p style={{ color: '#f87171' }}>{error}</p>}
+      {error && (
+        <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', padding: '1rem', color: '#fca5a5', marginBottom: '1rem' }}>
+          {error}
+        </div>
+      )}
+
+      {!images.length && !error && <p style={{ color: '#64748b' }}>Loading Earth images...</p>}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
         {images.map(img => {
@@ -60,6 +74,7 @@ export default function EarthPage() {
                 onError={e => e.target.style.display = 'none'} />
               <div style={{ padding: '0.6rem 0.8rem' }}>
                 <p style={{ fontSize: '0.72rem', color: '#64748b' }}>{img.date}</p>
+                <p style={{ fontSize: '0.65rem', color: '#475569' }}>DSCOVR · EPIC Camera</p>
               </div>
             </div>
           )
