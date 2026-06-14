@@ -19,21 +19,54 @@ export default function MarsRover() {
     setLoading(true)
     setError(null)
     setPhotos([])
-    const key = import.meta.env.VITE_NASA_API_KEY
     try {
       const res = await fetch(
-        `https://api.nasa.gov/mars-photos/api/v1/rovers/${r}/photos?sol=${s}&api_key=${key}&page=1`
+        `https://api.nasa.gov/mars-photos/api/v1/rovers/${r}/photos?sol=${s}&api_key=${import.meta.env.VITE_NASA_API_KEY}&page=1`
       )
       const text = await res.text()
       let data
-      try { data = JSON.parse(text) } catch { throw new Error('NASA API rate limit hit — try again in a minute') }
-      if (!data.photos?.length) {
-        setError(`No photos for ${r} Sol ${s} — try Sol 500 or Sol 2000`)
+      try {
+        data = JSON.parse(text)
+      } catch {
+        throw new Error('rate_limit')
+      }
+      if (data.error || !data.photos) throw new Error('rate_limit')
+      if (!data.photos.length) {
+        setError(`No photos for Sol ${s} — try another sol`)
       } else {
         setPhotos(data.photos.slice(0, 24))
       }
-    } catch (e) { setError(e.message) }
+    } catch (e) {
+      if (e.message === 'rate_limit') {
+        setError('NASA rate limit reached — trying backup source...')
+        fetchFallback(r, s)
+      } else {
+        setError(e.message)
+      }
+    }
     setLoading(false)
+  }
+
+  async function fetchFallback(r, s) {
+    try {
+      const res = await fetch(
+        `https://api.nasa.gov/mars-photos/api/v1/rovers/${r}/photos?sol=${s}&api_key=DEMO_KEY&page=1`
+      )
+      const text = await res.text()
+      try {
+        const data = JSON.parse(text)
+        if (data.photos?.length) {
+          setPhotos(data.photos.slice(0, 24))
+          setError(null)
+        } else {
+          setError(`No photos found for ${r} Sol ${s}. Try Sol 500, 1500, or 3000.`)
+        }
+      } catch {
+        setError(`Rate limit on both keys. Check your email from api.nasa.gov for your real key, then add it to Vercel env vars.`)
+      }
+    } catch (e) {
+      setError(e.message)
+    }
   }
 
   async function explainPhoto(photo) {
@@ -69,7 +102,6 @@ export default function MarsRover() {
           <label style={{ fontSize: '0.78rem', color: '#64748b' }}>Sol:</label>
           <input type="number" value={sol}
             onChange={e => setSol(e.target.value)}
-            onBlur={() => fetchPhotos(rover, sol)}
             onKeyDown={e => e.key === 'Enter' && fetchPhotos(rover, sol)}
             style={{ width: '80px', background: '#111827', border: '1px solid #1e2d4a', borderRadius: '8px', padding: '0.4rem 0.6rem', color: '#e2e8f0', fontSize: '0.82rem', outline: 'none' }}
           />
@@ -77,16 +109,23 @@ export default function MarsRover() {
         </div>
       </div>
 
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+        {[100, 500, 1000, 2000, 3000].map(s => (
+          <button key={s} onClick={() => { setSol(s); fetchPhotos(rover, s) }} style={{
+            background: sol == s ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.03)',
+            border: `1px solid ${sol == s ? 'rgba(239,68,68,0.4)' : '#1e2d4a'}`,
+            borderRadius: '6px', padding: '0.25rem 0.6rem',
+            color: sol == s ? '#f87171' : '#64748b',
+            cursor: 'pointer', fontSize: '0.72rem'
+          }}>Sol {s}</button>
+        ))}
+      </div>
+
       {loading && <p style={{ color: '#64748b' }}>Loading Mars photos...</p>}
 
       {error && (
-        <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', padding: '1rem', color: '#fca5a5', marginBottom: '1rem' }}>
+        <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '10px', padding: '1rem', color: '#fca5a5', marginBottom: '1rem', fontSize: '0.85rem' }}>
           {error}
-          <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            {[500, 1000, 2000, 3000].map(s => (
-              <button key={s} onClick={() => { setSol(s); fetchPhotos(rover, s) }} style={{ background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', padding: '0.2rem 0.6rem', color: '#f87171', cursor: 'pointer', fontSize: '0.72rem' }}>Try Sol {s}</button>
-            ))}
-          </div>
         </div>
       )}
 
